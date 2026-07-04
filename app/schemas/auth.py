@@ -34,6 +34,14 @@ class UserRegister(BaseModel):
             raise ValueError("Password must contain at least 1 special character")
         return v
 
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: str) -> str:
+        return v.lower()
 
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
