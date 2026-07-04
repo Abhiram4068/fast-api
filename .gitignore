@@ -55,4 +55,6 @@ htmlcov/
 
 # FastAPI/Uvicorn
 uvicorn.log
+
+# Test reports
 reports/
