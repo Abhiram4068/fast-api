@@ -11,7 +11,6 @@ def auth_client(client):
         "password": "Password@123",
     }
     client.post("/api/v1/auth/register", json=register_payload)
-
     # Login to set cookies on client
     login_payload = {
         "email": "manager@example.com",
