@@ -43,10 +43,17 @@ class UserLogin(BaseModel):
     def normalize_email(cls, v: str) -> str:
         return v.lower()
 
-class UserResponse(BaseModel):
+class RegisterResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
     username: str
     email: str
     message: str = "User registered successfully"
+
+class LoginResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    username: str
+    email: str
+    message: str = "Login successful"

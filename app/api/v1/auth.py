@@ -10,7 +10,7 @@ from app.core.exceptions import (
 )
 from app.database.session import get_db
 from app.repositories.user_repository import UserRepository
-from app.schemas.auth import UserLogin, UserRegister, UserResponse
+from app.schemas.auth import UserLogin, UserRegister, RegisterResponse, LoginResponse
 from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 # ------------------------------------------------------------------ #
 # Register
 # ------------------------------------------------------------------ #
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
     service = AuthService(db)
     try:
@@ -29,13 +29,13 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     except UsernameAlreadyExistsError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 
-    return UserResponse(id=user.id, username=user.username, email=user.email)
+    return RegisterResponse(id=user.id, username=user.username, email=user.email)
 
 
 # ------------------------------------------------------------------ #
 # Login
 # ------------------------------------------------------------------ #
-@router.post("/login", response_model=UserResponse)
+@router.post("/login", response_model=LoginResponse)
 def login(payload: UserLogin, response: Response, db: Session = Depends(get_db)):
     service = AuthService(db)
     try:
@@ -46,7 +46,7 @@ def login(payload: UserLogin, response: Response, db: Session = Depends(get_db))
     access_token, refresh_token = service.create_tokens_for_user(user)
     _set_auth_cookies(response, access_token, refresh_token)
 
-    return UserResponse(id=user.id, username=user.username, email=user.email)
+    return LoginResponse(id=user.id, username=user.username, email=user.email)
 
 
 # ------------------------------------------------------------------ #
