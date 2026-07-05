@@ -39,6 +39,19 @@ pipeline {
                 '''
             }
         }
+stage('Debug Branch') {
+    steps {
+        bat '''
+        echo ==========================
+        echo BRANCH_NAME=%BRANCH_NAME%
+        echo GIT_BRANCH=%GIT_BRANCH%
+        echo GIT_LOCAL_BRANCH=%GIT_LOCAL_BRANCH%
+        echo ==========================
+        git rev-parse --abbrev-ref HEAD
+        git branch
+        '''
+    }
+}
 
         stage('Merge staging into develop') {
             when {
