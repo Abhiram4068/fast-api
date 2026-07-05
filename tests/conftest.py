@@ -16,6 +16,8 @@ from app.database.session import get_db
 from app.main import app
 from app.models.user import User  # noqa: F401 ensures model is registered on Base
 from app.models.token_blacklist import TokenBlacklist  # noqa: F401
+from app.models.departments import Department  # noqa: F401
+
 
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 
