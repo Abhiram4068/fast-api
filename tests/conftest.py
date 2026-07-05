@@ -5,6 +5,7 @@ os.environ["DATABASE_URL"] = "postgresql://postgres:password1234@localhost:5432/
 os.environ["SECRET_KEY"] = "test-secret-key-not-for-production"
 os.environ["ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
+os.environ["REFRESH_TOKEN_EXPIRE_DAYS"] = "7"
 
 import pytest
 from sqlalchemy import create_engine
@@ -14,6 +15,7 @@ from app.database.base import Base
 from app.database.session import get_db
 from app.main import app
 from app.models.user import User  # noqa: F401 ensures model is registered on Base
+from app.models.token_blacklist import TokenBlacklist  # noqa: F401
 
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 
@@ -45,6 +47,6 @@ def client(db_session):
             pass  # closing is handled by db_session fixture
 
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as test_client:
+    with TestClient(app, base_url="https://testserver") as test_client:
         yield test_client
     app.dependency_overrides.clear()

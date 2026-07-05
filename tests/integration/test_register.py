@@ -142,3 +142,119 @@ def test_register_email_is_normalized_to_lowercase(client):
 
     assert response.status_code == 201
     assert response.json()["email"] == "john@example.com"
+
+
+def test_login_success(client):
+    # Register first
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "username": "johndoe",
+            "email": "john@example.com",
+            "password": "Password@123",
+        },
+    )
+
+    # Login — also tests email normalization
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "JOHN@EXAMPLE.COM",
+            "password": "Password@123",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["username"] == "johndoe"
+    assert data["email"] == "john@example.com"
+    assert "access_token" in response.cookies
+    assert "refresh_token" in response.cookies
+
+
+def test_login_invalid_credentials(client):
+    response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "notfound@example.com",
+            "password": "Password@123",
+        },
+    )
+    assert response.status_code == 401
+
+
+def test_refresh_success(client):
+    # Register and login to get tokens in cookies
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "username": "johndoe",
+            "email": "john@example.com",
+            "password": "Password@123",
+        },
+    )
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "john@example.com", "password": "Password@123"},
+    )
+    assert "refresh_token" in login_response.cookies
+
+    refresh_response = client.post("/api/v1/auth/refresh")
+    assert refresh_response.status_code == 200
+    assert refresh_response.json() == {"message": "Access token refreshed"}
+    assert "access_token" in refresh_response.cookies
+
+
+def test_refresh_missing_token(client):
+    response = client.post("/api/v1/auth/refresh")
+    assert response.status_code == 401
+    assert "No refresh token" in response.json()["detail"]
+
+
+def test_logout_clears_cookies(client):
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "username": "johndoe",
+            "email": "john@example.com",
+            "password": "Password@123",
+        },
+    )
+    client.post(
+        "/api/v1/auth/login",
+        json={"email": "john@example.com", "password": "Password@123"},
+    )
+
+    logout_response = client.post("/api/v1/auth/logout")
+    assert logout_response.status_code == 200
+    assert logout_response.json() == {"message": "Logged out successfully"}
+
+
+def test_refresh_token_is_revoked_after_logout(client):
+    """
+    After logout the refresh token must be blacklisted server-side,
+    so trying to use it again must return 401 even if the browser
+    still holds the cookie value.
+    """
+    client.post(
+        "/api/v1/auth/register",
+        json={
+            "username": "johndoe",
+            "email": "john@example.com",
+            "password": "Password@123",
+        },
+    )
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "john@example.com", "password": "Password@123"},
+    )
+    refresh_token = login_response.cookies["refresh_token"]
+
+    # Logout — blacklists the tokens server-side
+    client.post("/api/v1/auth/logout")
+
+    # Manually re-inject the old refresh token and try to refresh
+    client.cookies.set("refresh_token", refresh_token)
+    revoked_response = client.post("/api/v1/auth/refresh")
+    assert revoked_response.status_code == 401
+    assert "revoked" in revoked_response.json()["detail"].lower()

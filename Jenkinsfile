@@ -40,6 +40,27 @@ pipeline {
             }
         }
 
+        stage('Merge staging into develop') {
+            when {
+                branch 'staging'
+            }
+
+            steps {
+                bat '''
+                git config user.name "Jenkins CI"
+                git config user.email "jenkins@local"
+
+                git fetch origin
+
+                git checkout develop
+                git pull origin develop
+
+                git merge origin/staging --no-ff -m "Auto merge staging into develop"
+
+                git push origin develop
+                '''
+            }
+        }
     }
 
     post {
