@@ -1,7 +1,6 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
 from app.models.departments import Department
-from app.schemas.department import DepartmentCreate, DepartmentUpdate
 from sqlalchemy import func
 
 class DepartmentRepository:
@@ -19,9 +18,28 @@ class DepartmentRepository:
         self.db.refresh(db_department)
         return db_department
 
+    def get_all(self,skip: int = 0,limit: int = 100,search: str | None = None,) -> list[Department]:
 
-    def get_by_name(self, name: str) -> Department | None:
-       
+        query = self.db.query(Department)
+
+        if search:
+            query = query.filter(func.lower(Department.name).contains(search.lower()))
+
+        return (
+            query
+            .order_by(Department.name.asc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+    def count(self, search: str | None = None) -> int:
+        query = self.db.query(func.count(Department.id))
+        if search:
+            query = query.filter(func.lower(Department.name).contains(search.lower()))
+        return query.scalar() or 0
+
+    def get_by_name(self, name: str) -> Department | None:       
         return (
             self.db.query(Department)
             .filter(func.lower(Department.name) == name.lower())
@@ -29,6 +47,5 @@ class DepartmentRepository:
         )
 
     def get_by_id(self, department_id: UUID) -> Department | None:
-
         return self.db.query(Department).filter(Department.id == department_id).first()
 

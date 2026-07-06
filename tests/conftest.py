@@ -1,7 +1,7 @@
 import os
 
 # Force test settings BEFORE any app module is imported
-os.environ["DATABASE_URL"] = "postgresql://postgres:password1234@localhost:5432/fastapi_db_test"
+os.environ["DATABASE_URL"] = "postgresql://postgres:12345678@localhost:5432/fastapi_test"
 os.environ["SECRET_KEY"] = "test-secret-key-not-for-production"
 os.environ["ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
