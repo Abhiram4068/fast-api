@@ -1,7 +1,7 @@
 import os
 
 # Force test settings BEFORE any app module is imported
-os.environ["DATABASE_URL"] = "postgresql://postgres:password1234@localhost:5432/fastapi_db_test"
+os.environ["DATABASE_URL"] = "postgresql://postgres:12345678@localhost:5432/fastapi_test"
 os.environ["SECRET_KEY"] = "test-secret-key-not-for-production"
 os.environ["ALGORITHM"] = "HS256"
 os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "30"
@@ -16,6 +16,8 @@ from app.database.session import get_db
 from app.main import app
 from app.models.user import User  # noqa: F401 ensures model is registered on Base
 from app.models.token_blacklist import TokenBlacklist  # noqa: F401
+from app.models.departments import Department  # noqa: F401
+
 
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 
