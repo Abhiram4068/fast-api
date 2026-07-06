@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from app.utils.pagination import PaginatedResponse
 
 class DepartmentBase(BaseModel):
     name: str = Field(
@@ -92,3 +92,8 @@ class DepartmentResponse(DepartmentBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+
+class DepartmentListResponse(PaginatedResponse[DepartmentResponse]):
+    pass

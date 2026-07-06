@@ -16,3 +16,8 @@ class UserNotFoundError(Exception):
 class InvalidCredentialsError(Exception):
     """Raised when login credentials are invalid."""
     pass
+
+
+class DepartmentNotFoundError(Exception):
+    """Raised when a department cannot be found."""
+    pass
